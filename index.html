@@ -1,0 +1,419 @@
+<!DOCTYPE html>
+<html lang="ar">
+<head>
+<meta charset="UTF-8">
+<title>فعاليات العيد</title>
+
+<style>
+
+body{
+font-family:Tahoma;
+direction:rtl;
+text-align:center;
+margin:0;
+background:linear-gradient(120deg,#fff8e1,#ffe0b2);
+display:flex;
+justify-content:center;
+align-items:center;
+min-height:100vh;
+overflow:hidden;
+}
+
+.container{
+width:90%;
+max-width:600px;
+background:white;
+padding:25px;
+border-radius:18px;
+box-shadow:0 10px 25px rgba(0,0,0,0.15);
+}
+
+h1{
+margin-top:0;
+font-size:32px;
+}
+
+p{
+font-size:18px;
+line-height:1.6;
+}
+
+button{
+background:#ff9800;
+border:none;
+padding:12px;
+margin:8px;
+border-radius:10px;
+font-size:17px;
+cursor:pointer;
+width:80%;
+max-width:260px;
+}
+
+button:hover{
+background:#fb8c00;
+}
+
+.hidden{
+display:none;
+}
+
+.question{
+font-size:22px;
+margin:15px 0;
+}
+
+.progress{
+background:#eee;
+height:15px;
+border-radius:10px;
+overflow:hidden;
+margin-bottom:15px;
+}
+
+.bar{
+background:#ff9800;
+height:100%;
+width:0%;
+transition:0.3s;
+}
+
+.stage{
+font-weight:bold;
+font-size:18px;
+color:#e65100;
+margin:10px;
+}
+
+.timer{
+font-size:18px;
+color:#d32f2f;
+margin-bottom:10px;
+}
+
+.result{
+font-size:28px;
+margin-top:10px;
+}
+
+.star{
+position:fixed;
+color:#ffd54f;
+animation:float 6s linear infinite;
+}
+
+@keyframes float{
+0%{transform:translateY(100vh)}
+100%{transform:translateY(-10vh)}
+}
+
+.fire{
+position:fixed;
+font-size:30px;
+animation:boom 1s forwards;
+}
+
+@keyframes boom{
+0%{transform:scale(0)}
+100%{transform:scale(3);opacity:0}
+}
+
+.transition{
+font-size:24px;
+padding:30px;
+}
+
+</style>
+</head>
+
+<body>
+
+<div class="container">
+
+<div id="start">
+
+<h1>🎉 فعاليات العيد 🎉</h1>
+
+<p>
+لعبة عائلية ممتعة لمعرفة من يحفظ تاريخ العائلة أكثر.
+<br><br>
+المراحل:
+<br>
+جيل الأحفاد 🧒
+<br>
+جيل الآباء 👨
+<br>
+جيل الأجداد 👴
+</p>
+
+<button onclick="startQuiz()">ابدأ اللعبة</button>
+
+</div>
+
+
+<div id="quiz" class="hidden">
+
+<div class="progress">
+<div id="bar" class="bar"></div>
+</div>
+
+<div id="stage" class="stage"></div>
+
+<div id="timer" class="timer"></div>
+
+<div id="question" class="question"></div>
+
+<div id="answers"></div>
+
+</div>
+
+
+<div id="transition" class="hidden transition"></div>
+
+<div id="result" class="hidden"></div>
+
+</div>
+
+
+<script>
+
+const questions=[
+
+{stage:"جيل الأحفاد",q:"من هي فشونيستا الأسرة",a:["حنين","جوري","ميرا"],c:0},
+{stage:"جيل الأحفاد",q:"من هو أو هي الحفيد الأعظم",a:["فاتن","نادية","اريج"],c:1},
+{stage:"جيل الأحفاد",q:"من هو الشخص الذي أتى إلى حياتنا 2006 ومن بعده أشرقت الحياة",a:["توتوتوتي","نيرة","اروى"],c:1},
+{stage:"جيل الأحفاد",q:"من مؤلف نشيد الطاهر نجاحك ظاهر",a:["البراء","عباس","أحمد عثمان"],c:2},
+
+{stage:"جيل الآباء",q:"من القائل بلمي النبي القرقرقرقر",a:["العمة انتصار","العم يعقوب","العمة ابتسام"],c:1},
+{stage:"جيل الآباء",q:"من الخال الوحيد المفضل",a:["عثمان درار","خالو عثمان","كل الاجابات صحيحة"],c:2},
+{stage:"جيل الآباء",q:"من هي صديقة عمتو جديدة المفضلة",a:["سارة","سليمة","سناء"],c:0},
+{stage:"جيل الآباء",q:"من القائل انا عندي حس امني",a:["العمة رقية","الخالة صباح","العمة انتصار"],c:2},
+
+{stage:"جيل الأجداد",q:"من هو عم الجميع وجد الجميع",a:["مصطفى عبد اللطيف","ابراهيم صالح","محمد أحمد"],c:0},
+{stage:"جيل الأجداد",q:"من هي السباحة الاولمبية",a:["شباك","برتودة","نصرة"],c:2},
+{stage:"جيل الأجداد",q:"من الحبوبة التي حلقو ليها وركبوها الساقية",a:["زينب","حليمة","فاطمة"],c:1},
+{stage:"جيل الأجداد",q:"من هو الجد الطائر",a:["درار","عدنان","عثمان"],c:1}
+
+]
+
+let i=0
+let score=0
+let time=10
+let timer
+
+
+function startQuiz(){
+document.getElementById("start").classList.add("hidden")
+document.getElementById("quiz").classList.remove("hidden")
+showQuestion()
+}
+
+
+function showQuestion(){
+
+let q=questions[i]
+
+document.getElementById("stage").innerText=q.stage
+document.getElementById("question").innerText=q.q
+
+let html=""
+
+q.a.forEach((choice,index)=>{
+html+=`<button onclick="answer(${index})">${choice}</button>`
+})
+
+document.getElementById("answers").innerHTML=html
+
+document.getElementById("bar").style.width=(i/questions.length*100)+"%"
+
+startTimer()
+
+}
+
+
+function startTimer(){
+
+time=10
+
+document.getElementById("timer").innerText="⏱ الوقت: "+time
+
+timer=setInterval(()=>{
+
+time--
+
+document.getElementById("timer").innerText="⏱ الوقت: "+time
+
+if(time<=0){
+clearInterval(timer)
+next()
+}
+
+},1000)
+
+}
+
+
+function answer(x){
+
+clearInterval(timer)
+
+if(x===questions[i].c){
+score++
+}
+
+next()
+
+}
+
+
+function next(){
+
+let currentStage=questions[i].stage
+
+i++
+
+if(i<questions.length && questions[i].stage!==currentStage){
+
+showTransition(questions[i].stage)
+
+}
+else if(i<questions.length){
+
+showQuestion()
+
+}
+else{
+
+finish()
+
+}
+
+}
+
+
+function showTransition(stage){
+
+document.getElementById("quiz").classList.add("hidden")
+
+let t=document.getElementById("transition")
+
+t.classList.remove("hidden")
+
+t.innerHTML="الآن ننتقل إلى "+stage+" 👨‍👩‍👧‍👦"
+
+setTimeout(()=>{
+
+t.classList.add("hidden")
+document.getElementById("quiz").classList.remove("hidden")
+showQuestion()
+
+},2000)
+
+}
+
+
+function finish(){
+
+document.getElementById("quiz").classList.add("hidden")
+
+let title=""
+let desc=""
+
+if(score<=3){
+title="مخ دامنو"
+desc="سجم امك الراجياك فك التلفون واقعد مع الناس 😂"
+}
+else if(score<=6){
+title="الطاهر برو"
+desc="حتى لو انت ما برو لكن وصلت مرحلة جيدة"
+}
+else if(score<=9){
+title="اوقج مني"
+desc="ما قصرت تب 🔥"
+}
+else{
+title="درار الكبير"
+desc="انت مو درار… انت أبو درار 👑"
+}
+
+let r=document.getElementById("result")
+
+r.classList.remove("hidden")
+
+r.innerHTML=
+"<h1>النتيجة</h1>"+
+"<div class='result'>"+title+"</div>"+
+"<p>"+desc+"</p>"+
+"<p>درجتك "+score+" من "+questions.length+"</p>"
+
+fireworks()
+
+saveScore()
+
+}
+
+
+function fireworks(){
+
+for(let i=0;i<30;i++){
+
+let f=document.createElement("div")
+
+f.className="fire"
+
+f.innerText="🎆"
+
+f.style.left=Math.random()*100+"vw"
+f.style.top=Math.random()*80+"vh"
+
+document.body.appendChild(f)
+
+setTimeout(()=>f.remove(),1000)
+
+}
+
+}
+
+
+function stars(){
+
+for(let i=0;i<25;i++){
+
+let s=document.createElement("div")
+
+s.className="star"
+
+s.innerText="⭐"
+
+s.style.left=Math.random()*100+"vw"
+
+s.style.animationDuration=4+Math.random()*4+"s"
+
+document.body.appendChild(s)
+
+}
+
+}
+
+
+function saveScore(){
+
+let best=localStorage.getItem("best")
+
+if(!best || score>best){
+localStorage.setItem("best",score)
+}
+
+let bestScore=localStorage.getItem("best")
+
+document.getElementById("result").innerHTML+=
+"<h3>🏆 أفضل نتيجة: "+bestScore+"</h3>"
+
+}
+
+stars()
+
+</script>
+
+</body>
+  </html>
